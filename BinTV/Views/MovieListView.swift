@@ -383,8 +383,19 @@ final class YouTubeBrowser: NSObject, ObservableObject, WKNavigationDelegate, WK
             return true
         }
         webView.uiDelegate = self
-        // Vuốt rìa màn hình = back / next (thay thế nút trình duyệt).
-        webView.allowsBackForwardNavigationGestures = true
+        // [BACK-GESTURE FIX 2026-09-12] TẮT gesture back/forward RIÊNG của
+        // WKWebView (nguyên gốc = true, "vuốt rìa = back/next thay nút trình
+        // duyệt"). Lý do — xung đột thật với spec điều hướng mới:
+        //  • Cạnh TRÁI: gesture hệ thống của webview và chuỗi Back cấp app
+        //    (window-level edge-pan → BinTVBackRegistry.goBack) cùng nhận
+        //    một cú vuốt → LÙI 2 BƯỚC (vi phạm "đúng 1 bước").
+        //  • cạnh PHẢI: webview tự nhảy FORWARD ngoài ý muốn, phá yêu cầu
+        //    "vuốt cạnh phải = hiện menu".
+        // UX back trên TUBE ĐƯỢC GIỮ NGUYÊN về kết quả: vuốt cạnh trái vẫn
+        // lùi 1 bước trong lịch sử YouTube — nhưng đi qua chuỗi Back thống
+        // nhất của app (có haptic, đúng 1 bước, ở trang gốc = NO-OP không
+        // thoát app), nhất quán với PHIM và các tab khác.
+        webView.allowsBackForwardNavigationGestures = false
         // Pinch 2 ngón tay để zoom / fit màn hình.
         enablePinchZoom()
         // GIỮ MÀN HÌNH (~0.4s) → toggle theater mode.
