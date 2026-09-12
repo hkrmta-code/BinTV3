@@ -1,0 +1,58 @@
+BIN TV iOS — PREFLIGHT FIX (2026-09-12) — build vẫn 219 / 2.3.0
+=================================================================
+Lỗi GitHub Actions: FAIL tại bước "Preflight (pbxproj + scheme vs source files)"
+với "::error::3 file .swift/.m KHONG nam trong Compile Sources".
+
+NGUYÊN NHÂN GỐC: repo đã nhận project.pbxproj build 219 (đã bỏ đăng ký biên
+dịch 3 file browser-UI khai tử) nhưng 3 FILE VẪN CÒN TRÊN REPO — zip không
+biểu diễn được thao tác XÓA, nên patch trước không tự xóa chúng.
+
+LÀM THEO ĐÚNG 3 BƯỚC SAU (bước 1 là BẮT BUỘC):
+
+BƯỚC 1 — XÓA 3 FILE KHAI TỬ KHỎI REPO (cách gây ra lỗi preflight):
+  Cách a (GitHub UI, làm 3 lần): mở từng file → biểu tượng THÙNG RÁC (🗑)
+    góc phải → "Commit changes" trực tiếp vào main:
+      BinTV/Views/BrowserTabs.swift
+      BinTV/Views/BrowserTabBar.swift
+      BinTV/Views/NewTabPageView.swift
+  Cách b (git CLI):
+      git rm BinTV/Views/BrowserTabs.swift BinTV/Views/BrowserTabBar.swift \
+             BinTV/Views/NewTabPageView.swift
+      git commit -m "chore: remove deprecated browser-tab UI files (build 219)"
+      git push
+  Cách c (thay cả cây thư mục): xóa folder BinTV/Views cũ rồi upload lại toàn
+    bộ từ BinTV-Fixed.zip (bản đầy đủ — không chứa 3 file chết).
+
+BƯỚC 2 — UPLOAD/GHI ĐÈ các file trong zip này (giữ nguyên đường dẫn):
+  Đã SỬA ở vòng này:
+    .github/workflows/build-ipa.yml          (preflight 2 chiều + hướng sửa trong log)
+    tests/mock-e2e/test_project_consistency.py  (thêm T4.9 guard cổng CI)
+    tests/mock-e2e/README.md                 (số assertion 314)
+    BAOCAO-KYTHUAT-FIX-2026-09-12.md         (Addendum 4)
+    README.md                                (mục Preflight CI fix)
+  KÈM LẠI BẢN CHUẨN build 219 (nội dung KHÔNG đổi so với patch trước —
+  upload đè để loại trừ mọi kịch bản "upload thiếu/lẫn pbxproj cũ"):
+    BinTV.xcodeproj/project.pbxproj          (219 / 2.3.0 — A59/B59, sạch A53-A57)
+    BinTV/Info.plist                         (219 / 2.3.0)
+    BinTV/Views/ContentView.swift
+    BinTV/Views/GestureOverlayMenuView.swift
+    BinTV/Views/UIProportions.swift
+
+BƯỚC 3 — Kiểm tra trước khi push (tùy chọn, không cần Xcode):
+    cd tests/mock-e2e && node run_all.js     → kỳ vọng 314/314 PASS
+  Push/commit → GitHub Actions tự chạy → bước Preflight phải XANH:
+    "Compile Sources : 16 entry | file nguon tren dia : 17"
+    "  - bo qua co chu dich: BinTV/App/AppDelegate.swift (// ci-skip: ...)"
+    "Scheme check  : OK (1 BlueprintIdentifier hop le)"
+    "==> bundle_id dung cho build: com.bintv.ios"
+  rồi mới đến Select Xcode → Build .app → Package .ipa.
+
+GHI CHÚ TRUNG THỰC:
+- Nếu log Preflight của bạn liệt kê file KHÁC 3 file trên (vd
+  GestureOverlayMenuView.swift) → repo đang thiếu pbxproj 219: bước 2 xử lý.
+- Preflight mới còn bắt chiều ngược lại (Compile Sources tham chiếu file
+  không tồn tại trên đĩa → "Build input file cannot be found") — nếu gặp
+  lỗi này nghĩa là đã xóa file nhưng pbxproj chưa được upload: bước 2 xử lý.
+- Sandbox không có macOS/Xcode: kết quả xcodebuild/archive/IPA là NOT VERIFIED
+  cho tới khi GitHub Actions chạy xanh; preflight đã được chạy thật (python3)
+  trên cả 3 kịch bản: canonical PASS, thiếu-xóa FAIL, pbxproj-cũ FAIL.

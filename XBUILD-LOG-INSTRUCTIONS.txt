@@ -1,0 +1,31 @@
+BIN TV iOS — xbuild.log (2026-09-12) — workflow only, app van 219/2.3.0
+=========================================================================
+CACH AP DUNG:
+1. Upload/ghi de file .github/workflows/build-ipa.yml trong zip nay len repo
+   (GitHub UI: Add file -> Upload files, giu nguyen duong dan).
+2. (Khuyen khich) upload de 4 file con lai: tests/mock-e2e/*.py + README,
+   BAOCAO (Addendum 5), README.md — khong bat buoc de build.
+3. Push/commit -> Actions tu chay (hoac Actions -> Build unsigned IPA ->
+   Run workflow).
+
+SAU MOI LAN CHAY (thanh cong HAY that bai):
+- Vao tab Actions -> lan chay -> muc **Artifacts** -> tai **`xbuild-log`**
+  -> giai nen duoc `xbuild.log` — nhat ky HOP NHAT toan pipeline:
+    * Header: thoi gian UTC, link run, ref/sha, inputs, runner.
+    * [STEP] Detect / Preflight / Select Xcode / Toolchain / Build /
+      Verify .app / Package .ipa / Verify .ipa — output day du tung buoc.
+    * [STEP END] <ten> exit=N — mo file la biet ngay buoc nao chet.
+    * xcodebuild output day du (khi toi buoc Build), kem error dump 60 dong.
+- Job Summary cung in 15 dong 'error:' gan nhat trich tu xbuild.log.
+
+VI SAO TRUOC DAY KHONG CO LOG KHI FAIL SOM:
+- Log cu (xcodebuild.log) chi sinh ra o buoc Build; fail o Preflight =
+  khong co file nao de tai. Nay Init xbuild.log chay NGAY SAU checkout
+  nen artifact 'xbuild-log' ton tai trong MOI kich ban.
+
+TRUNG THUC:
+- Sandbox khong co macOS/GitHub Actions: chay that tren runner = NOT VERIFIED
+  cho toi khi ban push; co che wrapper (tee -a + PIPESTATUS) da duoc mo
+  phong bash that trong sandbox: exit code 0/65 lan truyen dung, log ghi du.
+- Khong doi bat cu thu gi trong app: pbxproj/Info.plist/Swift giu nguyen
+  (219/2.3.0); preflight python giu nguyen tung byte (diff = 0).

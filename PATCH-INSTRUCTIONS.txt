@@ -1,0 +1,32 @@
+BIN TV iOS — PATCH BUILD 219 (Fullscreen + Long-press Overlay Menu)
+====================================================================
+
+CÁCH ÁP DỤNG (repo GitHub, upload qua web UI hoặc git):
+
+1. UPLOAD/GHI ĐÈ 9 file sau (giữ nguyên đường dẫn):
+   - BinTV/Views/ContentView.swift                  (viết lại — shell fullscreen)
+   - BinTV/Views/GestureOverlayMenuView.swift       (MỚI — overlay menu 4 icon)
+   - BinTV/Views/UIProportions.swift                (thêm metrics menuIconSide/GlyphFont/Spacing)
+   - BinTV.xcodeproj/project.pbxproj                (bỏ đăng ký 3 file chết, thêm 1 file mới, ver 219/2.3.0)
+   - BinTV/Info.plist                               (219 / 2.3.0)
+   - tests/mock-e2e/test_project_consistency.py     (T4.8 viết lại cho kiến trúc mới)
+   - tests/mock-e2e/README.md                       (cập nhật số assertion 302)
+   - BAOCAO-KYTHUAT-FIX-2026-09-12.md               (Addendum 3)
+   - README.md                                      (mục build 219)
+
+2. XÓA 3 file sau khỏi repo (BẮT BUỘC — zip không biểu diễn được thao tác xóa):
+   - BinTV/Views/BrowserTabs.swift
+   - BinTV/Views/BrowserTabBar.swift
+   - BinTV/Views/NewTabPageView.swift
+   (pbxproj mới đã bỏ đăng ký biên dịch 3 file này; nếu quên xóa trên đĩa
+   thì build KHÔNG lỗi — file mồ côi bị bỏ qua — nhưng repo sẽ chứa code chết.)
+
+3. Push/commit → GitHub Actions chạy build-ipa.yml → build 219, ver 2.3.0.
+
+LƯU Ý QUAN TRỌNG NHẤT: nếu bạn KHÔNG upload pbxproj mới mà chỉ upload các
+file Swift, Xcode sẽ báo lỗi "GestureOverlayMenuView.swift: No such file"
+khi build vì file mới chưa được đăng ký vào target (và 3 file chết thành
+fileRef mồ côi). Luôn upload pbxproj đi kèm.
+
+Test cục bộ (không cần Xcode): cd tests/mock-e2e && node run_all.js
+Kỳ vọng: 302/302 PASS.
