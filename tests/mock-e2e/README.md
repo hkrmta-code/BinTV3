@@ -45,7 +45,7 @@ node run_all.js          # chạy cả 4 suite; exit 0 = tất cả pass
 - T2: **55/55 PASS** — thuật toán rewrite m3u8 (port Swift).
 - T3: **53/53 PASS** — E2E live HTTP, header gate 403/Referer vượt qua,
   bytes nguyên vẹn, redirect bọc kín, Range/206, HEAD.
-- T4: **192/192 PASS** — nhất quán project + T4.4b (regression guard lỗi
+- T4: **187/187 PASS** — nhất quán project + T4.4b (regression guard lỗi
   CI `if let error = error`) + T4.8 viết lại cho build 219 (Fullscreen +
   Long-press Overlay Menu: khai tử sạch BrowserTabBar/NTP/BrowserTabs
   khỏi đĩa lẫn pbxproj, overlay blur icon-only, gesture plumbing nguyên
@@ -56,5 +56,5 @@ node run_all.js          # chạy cả 4 suite; exit 0 = tất cả pass
   mọi step tee -a, artifact `xbuild-log` if: always()) + tombstone ci-skip
   cho 3 file khai tử (whitelist chặt T4.1 + mô phỏng trọn Preflight 2.1:
   missing = 0 trên canonical)**.
-- Tổng: **340/340 PASS** (T4.9 guard runner self-hosted; T4.10 guard nav
+- Tổng: **335/335 PASS** (T4.9 guard runner self-hosted; T4.10 guard nav
   gestures 2026-09-12 + fix PHIM màn đen).

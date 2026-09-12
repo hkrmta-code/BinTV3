@@ -436,3 +436,17 @@ Bối cảnh: IPA build 219 đã cài chạy ổn định trên iPhone iOS 16.5 
 **Bổ sung root-cause (không reload tùy tiện):** `noteTabDidAppear()` thêm khôi phục CÓ ĐIỀU KIỆN — chỉ khi `started && !loadFailed && webView.url == nil` (webview thật sự trống nội dung, vd race server-ready muộn lúc mở app) mới `loadPage()` từ server singleton (cache localStorage nguyên vẹn); đang có url = đang có nội dung → không đụng; lỗi mạng giữ overlay "Thử lại" chủ đích. Kết hợp delegate `webViewWebContentProcessDidTerminate → reload` (chỉ khi process chết) + `setNeedsDisplay()` repaint: đủ 3 tầng khôi phục đúng nguyên nhân, không tầng nào reload bừa.
 
 **Kiểm chứng:** brace-balance + CJK-scan file sửa; T4.10 +2 assertion (restore có điều kiện, không onDisappear); suite **340/340 PASS**; preflight canonical mô phỏng rc=0; workflow YAML không đổi (CI giữ nguyên). Compile/archive/IPA Xcode thật: **NOT VERIFIED** tại sandbox — cổng xác nhận GitHub Actions build 220.
+
+---
+
+## ADDENDUM 10 — BACK CẠNH TRÁI: phát hiện & triệt xung đột gesture thật trên TUBE
+
+Audit theo yêu cầu "kiểm tra và thêm chức năng vuốt cạnh trái = Back": hạ tầng đã land từ build 220 (window-level `UIScreenEdgePanGestureRecognizer` `.left` → `handleBackGesture()` → menu → sheet → `BinTVBackRegistry.goBack()` → root NO-OP; tag↔rawValue khớp 0/1/2/3; sheet `.sheet(isPresented:$showingPlayer)`; StateObject giữ registration sống). **Phát hiện 1 xung đột THẬT:** `MovieListView.swift` (YouTubeBrowser) có `webView.allowsBackForwardNavigationGestures = true` **từ bản gốc** ("vuốt rìa = back/next thay nút trình duyệt") → trên tab TUBE, vuốt cạnh trái kích hoạt ĐỒNG THỜI gesture riêng của WKWebView và chuỗi Back cấp app = **lùi 2 bước** (vi phạm "đúng 1 bước"); vuốt cạnh phải có thể **nhảy forward oan**, phá yêu cầu "cạnh phải = hiện menu".
+
+**Fix tận gốc:** tắt cờ đó (`= false`, 1 dòng duy nhất của bản gốc phải đổi — bắt buộc bởi spec gesture mới). Back trên TUBE giữ nguyên UX về kết quả: vuốt cạnh trái vẫn lùi đúng 1 bước lịch sử YouTube qua `BinTVBackRegistry` (canGoBack-gated, có haptic); ở trang gốc YouTube = NO-OP, không thoát app; cạnh phải thuần hiện menu. PHIM không bị (cờ này mặc định false ở PhimWebView). Guard test mới khóa `= false` (T4 +1 → suite **341/341**).
+
+---
+
+## ADDENDUM 11 — DỌN 3 FILE CHẾT KHỎI Views/ (theo yêu cầu rà soát repo GitHub)
+
+`BrowserTabBar.swift`, `BrowserTabs.swift`, `NewTabPageView.swift` (UI browser-tab vòng 3, khai tử build 219) đã được XÓA hẳn khỏi cây nguồn: kiểm chứng trước khi xóa — pbxproj KHÔNG còn bất kỳ tham chiếu nào (không fileRef mồ côi), không code sống nào gọi symbol của chúng (chỉ comment tài liệu nhắc tên), Preflight vẫn rc=0 sau xóa (đĩa 17 file − 1 ci-skip AppDelegate = 16 entry Sources). Suite mock-e2e chấp nhận cả hai trạng thái (tombstone hoặc đã xóa): **335/335 PASS** (T4 = 187 vì 6 assertion dữ-liệu-theo-đĩa của 3 file chết tự rút khi file không còn). Repo GitHub: xóa đúng 3 file này qua UI là đủ; 7 file còn lại trong Views/ đều đang sống.

@@ -352,6 +352,8 @@ ok("if started, !loadFailed, webView.url == nil" in pwsrc,
    "PHIM restore CÓ ĐIỀU KIỆN: chỉ khôi phục khi webview thật sự KHÔNG có URL — không reload tùy tiện")
 ok("onDisappear" not in pwsrc,
    "PHIM: không onDisappear/stop khi rời tab — state + server singleton sống nguyên qua chuyển tab")
+ok("allowsBackForwardNavigationGestures = false" in mlsrc,
+   "TUBE: TẮT edge-gesture riêng của WKWebView — hết xung đột Back 2 bước / forward oan với chuỗi Back cấp app")
 # --- xbuild.log: nhật ký hợp nhất toàn pipeline (fix 2026-09-12 vòng 2) ---
 ok("- name: Init xbuild.log" in yml and yml.index("- name: Init xbuild.log") < yml.index("- name: Detect Xcode project"),
    "bước Init xbuild.log chạy TRƯỚC Detect/Preflight — fail sớm vẫn có artifact log")
